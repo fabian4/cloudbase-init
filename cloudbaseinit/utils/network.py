@@ -17,6 +17,7 @@ import binascii
 import socket
 import struct
 import sys
+import time
 
 from oslo_log import log as oslo_logging
 from six.moves.urllib import parse
@@ -26,24 +27,33 @@ from cloudbaseinit.osutils import factory as osutils_factory
 
 
 LOG = oslo_logging.getLogger(__name__)
-MAX_URL_CHECK_RETRIES = 3
+MAX_URL_CHECK_RETRIES = 12
 
 
 def check_url(url, retries_count=MAX_URL_CHECK_RETRIES):
     for i in range(0, MAX_URL_CHECK_RETRIES):
         try:
             LOG.debug("Testing url: %s" % url)
-            request.urlopen(url)
+            request.urlopen(url, timeout=5)
             return True
         except Exception:
             pass
     return False
 
 
+
 def check_metadata_ip_route(metadata_url):
     # Workaround for: https://bugs.launchpad.net/quantum/+bug/1174657
     osutils = osutils_factory.get_os_utils()
-
+    def get_gateway():
+        for i in range(90):
+            (interface_index, gateway) = osutils.get_default_gateway()
+            if gateway:
+                return interface_index, gateway
+            else:
+                LOG.debug('can not get gw, wait 1s')
+                time.sleep(2)
+        return None, None
     if sys.platform == 'win32' and osutils.check_os_version(6, 0):
         # 169.254.x.x addresses are not getting routed starting from
         # Windows Vista / 2008
@@ -51,9 +61,8 @@ def check_metadata_ip_route(metadata_url):
         metadata_host = metadata_netloc.split(':')[0]
 
         if metadata_host.startswith("169.254."):
-            if (not osutils.check_static_route_exists(metadata_host) and
-                    not check_url(metadata_url)):
-                (interface_index, gateway) = osutils.get_default_gateway()
+            if (not osutils.check_static_route_exists(metadata_host)):
+                (interface_index, gateway) = get_gateway()
                 if gateway:
                     try:
                         LOG.debug('Setting gateway for host: %s',
@@ -66,6 +75,7 @@ def check_metadata_ip_route(metadata_url):
                     except Exception as ex:
                         # Ignore it
                         LOG.exception(ex)
+            check_url(metadata_url)
 
 
 def address6_to_4_truncate(address6):
