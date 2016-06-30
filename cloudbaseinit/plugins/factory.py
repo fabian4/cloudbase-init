@@ -24,16 +24,14 @@ opts = [
         default=[
             'cloudbaseinit.plugins.common.mtu.MTUPlugin',
             'cloudbaseinit.plugins.windows.ntpclient.NTPClientPlugin',
+            'cloudbaseinit.plugins.common.setuserpassword.SetUserPasswordPlugin',
             'cloudbaseinit.plugins.common.sethostname.SetHostNamePlugin',
-            'cloudbaseinit.plugins.windows.createuser.CreateUserPlugin',
             'cloudbaseinit.plugins.common.networkconfig.NetworkConfigPlugin',
             'cloudbaseinit.plugins.windows.licensing.WindowsLicensingPlugin',
             'cloudbaseinit.plugins.common.sshpublickeys.'
             'SetUserSSHPublicKeysPlugin',
             'cloudbaseinit.plugins.windows.extendvolumes.ExtendVolumesPlugin',
             'cloudbaseinit.plugins.common.userdata.UserDataPlugin',
-            'cloudbaseinit.plugins.common.setuserpassword.'
-            'SetUserPasswordPlugin',
             'cloudbaseinit.plugins.windows.winrmlistener.'
             'ConfigWinRMListenerPlugin',
             'cloudbaseinit.plugins.windows.winrmcertificateauth.'
